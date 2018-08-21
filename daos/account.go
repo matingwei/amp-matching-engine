@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"fmt"
+
 	"github.com/Proofsuite/amp-matching-engine/app"
 	"github.com/Proofsuite/amp-matching-engine/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -56,12 +57,15 @@ func (dao *AccountDao) GetByAddress(owner common.Address) (response *types.Accou
 	q := bson.M{"address": owner.Hex()}
 	err = db.Get(dao.dbName, dao.collectionName, q, 0, 1, &res)
 
+	fmt.Printf("%v", q)
+
 	if err != nil {
 		return
 	} else if len(res) > 0 {
 		response = res[0]
 		return
 	}
+
 	return nil, fmt.Errorf("NO_ACCOUNT_FOUND")
 }
 
@@ -72,17 +76,19 @@ func (dao *AccountDao) GetTokenBalances(owner common.Address) (map[common.Addres
 	if err != nil {
 		return nil, err
 	}
+
 	if len(response) > 0 {
 		return response[0].TokenBalances, nil
 	}
+
 	return nil, fmt.Errorf("NO_ACCOUNT_FOUND")
 }
 
 func (dao *AccountDao) GetWethTokenBalance(owner common.Address) (*types.TokenBalance, error) {
 	return &types.TokenBalance{
-		Balance:big.NewInt(0),
-		Allowance:big.NewInt(0),
-		LockedBalance:big.NewInt(0),
+		Balance:       big.NewInt(0),
+		Allowance:     big.NewInt(0),
+		LockedBalance: big.NewInt(0),
 	}, nil
 }
 

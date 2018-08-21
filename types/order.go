@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 	"time"
 
@@ -136,6 +137,7 @@ func (o *Order) Process(p *Pair) error {
 	o.BaseToken = p.BaseTokenAddress
 	o.QuoteToken = p.QuoteTokenAddress
 	o.PairName = p.Name
+	o.PairID = p.ID
 
 	return nil
 }
@@ -180,7 +182,6 @@ func (o *Order) GetOBMatchKey() (ss string) {
 // MarshalJSON implements the json.Marshal interface
 func (o *Order) MarshalJSON() ([]byte, error) {
 	order := map[string]interface{}{
-		"id":              o.ID,
 		"exchangeAddress": o.ExchangeAddress,
 		"userAddress":     o.UserAddress,
 		"buyToken":        o.BuyToken,
@@ -195,7 +196,6 @@ func (o *Order) MarshalJSON() ([]byte, error) {
 		"takeFee":         o.TakeFee.String(),
 		"expires":         o.Expires.String(),
 		"nonce":           o.Nonce.String(),
-		"pairID":          o.PairID,
 		"pairName":        o.PairName,
 		"price":           o.Price,
 		"filledAmount":    o.FilledAmount,
@@ -203,6 +203,14 @@ func (o *Order) MarshalJSON() ([]byte, error) {
 		"hash":            o.Hash.String(),
 		"createdAt":       o.CreatedAt.Format(time.RFC3339Nano),
 		"updatedAt":       o.UpdatedAt.Format(time.RFC3339Nano),
+	}
+
+	if o.ID != bson.ObjectId("") {
+		order["id"] = o.ID
+	}
+
+	if o.PairID != bson.ObjectId("") {
+		order["pairID"] = o.PairID
 	}
 
 	if o.Signature != nil {
@@ -464,6 +472,7 @@ func (o *Order) SetBSON(raw bson.Raw) error {
 
 	err := raw.Unmarshal(decoded)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 
@@ -529,7 +538,7 @@ func (o *Order) Print() {
 		fmt.Println("Error: ", err)
 	}
 
-	fmt.Print(string(b))
+	fmt.Print("\n", string(b))
 }
 
 // type OrderData struct {
